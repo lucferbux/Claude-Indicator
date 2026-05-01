@@ -37,7 +37,19 @@
     },
     "configuration": {
       "title": "Claude Vertex Indicator",
-      "properties": {}
+      "properties": {
+        "claude-vertex-indicator.provider": {
+          "type": "string",
+          "default": "auto",
+          "enum": ["auto", "vertex", "anthropic"],
+          "enumDescriptions": [
+            "Auto-detect from environment variables (CLAUDE_CODE_USE_VERTEX, ANTHROPIC_VERTEX_PROJECT_ID)",
+            "Force Vertex AI provider",
+            "Force Anthropic API provider"
+          ],
+          "description": "Which Claude Code provider to display. Use 'auto' to detect from env vars, or set explicitly if auto-detection fails."
+        }
+      }
     }
   },
   "scripts": {

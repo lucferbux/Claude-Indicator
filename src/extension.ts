@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { execSync } from 'child_process';
 import { ProviderType } from './types';
 import { initProviderTracker, disposeProviderTracker } from './providerTracker';
 import { UsageViewProvider } from './panel/UsageViewProvider';
@@ -6,12 +7,41 @@ import { UsageViewProvider } from './panel/UsageViewProvider';
 let statusBarItem: vscode.StatusBarItem;
 
 function detectProvider(): ProviderType {
+  const setting = vscode.workspace
+    .getConfiguration('claude-vertex-indicator')
+    .get<string>('provider', 'auto');
+
+  if (setting === 'vertex') {
+    return 'vertex';
+  }
+  if (setting === 'anthropic') {
+    return 'anthropic';
+  }
+
   if (
     process.env.CLAUDE_CODE_USE_VERTEX === '1' ||
     process.env.ANTHROPIC_VERTEX_PROJECT_ID
   ) {
     return 'vertex';
   }
+
+  try {
+    const shell = process.env.SHELL || '/bin/zsh';
+    const out = execSync(
+      `${shell} -ilc 'echo "__CV__$CLAUDE_CODE_USE_VERTEX|$ANTHROPIC_VERTEX_PROJECT_ID"'`,
+      { timeout: 3000, stdio: ['pipe', 'pipe', 'pipe'] },
+    ).toString();
+    const match = out.match(/__CV__(.+)\|(.+)?/);
+    if (match) {
+      const [, useVertex, projectId] = match;
+      if (useVertex?.trim() === '1' || projectId?.trim()) {
+        return 'vertex';
+      }
+    }
+  } catch {
+    // shell probe failed, fall through
+  }
+
   return 'anthropic';
 }
 
