@@ -48,13 +48,29 @@ function estimateTokenSplit(
   };
 }
 
+function getBestMonthPrefix(cache: StatsCache): string {
+  const current = getCurrentMonthPrefix();
+  const hasCurrentData = cache.dailyModelTokens.some((d) => d.date.startsWith(current));
+  if (hasCurrentData) {
+    return current;
+  }
+
+  const dates = cache.dailyModelTokens.map((d) => d.date).sort();
+  if (dates.length === 0) {
+    return current;
+  }
+
+  const latest = dates[dates.length - 1];
+  return latest.substring(0, 7);
+}
+
 export function getMonthlyStats(): MonthlyStats | null {
   const cache = readStatsCache();
   if (!cache) {
     return null;
   }
 
-  const monthPrefix = getCurrentMonthPrefix();
+  const monthPrefix = getBestMonthPrefix(cache);
 
   const monthlyTokenDays = cache.dailyModelTokens.filter((d) => d.date.startsWith(monthPrefix));
   const monthlyActivityDays = cache.dailyActivity.filter((d) => d.date.startsWith(monthPrefix));

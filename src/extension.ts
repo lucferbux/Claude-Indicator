@@ -1,21 +1,30 @@
 import * as vscode from 'vscode';
-import { StatsPanel } from './panel/StatsPanel';
+import { StatsPanelProvider } from './panel/StatsPanelProvider';
 import { ProviderType } from './types';
 
 let statusBarItem: vscode.StatusBarItem;
 
 export function activate(context: vscode.ExtensionContext) {
   const isVertex = process.env.CLAUDE_CODE_USE_VERTEX === '1';
-  const projectId = process.env.ANTHROPIC_VERTEX_PROJECT_ID;
   const provider: ProviderType = isVertex ? 'vertex' : 'anthropic';
 
-  const showDashboard = vscode.commands.registerCommand(
+  const panelProvider = new StatsPanelProvider(context.extensionUri, provider);
+
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      'claude-vertex-indicator.statsView',
+      panelProvider,
+      { webviewOptions: { retainContextWhenHidden: true } },
+    ),
+  );
+
+  const togglePanel = vscode.commands.registerCommand(
     'claude-vertex-indicator.showDashboard',
     () => {
-      StatsPanel.createOrShow(context.extensionUri, provider);
+      vscode.commands.executeCommand('claude-vertex-indicator.statsView.focus');
     },
   );
-  context.subscriptions.push(showDashboard);
+  context.subscriptions.push(togglePanel);
 
   statusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Right,
@@ -24,19 +33,17 @@ export function activate(context: vscode.ExtensionContext) {
   statusBarItem.command = 'claude-vertex-indicator.showDashboard';
 
   if (isVertex) {
-    statusBarItem.text = '$(cloud) Vertex AI';
-    statusBarItem.tooltip = projectId
-      ? `Claude Code via Vertex AI\nProject: ${projectId}\nClick for usage dashboard`
-      : 'Claude Code via Vertex AI\nClick for usage dashboard';
+    statusBarItem.text = '$(cloud)';
+    statusBarItem.tooltip = 'Claude Code via Vertex AI — Click for usage stats';
     statusBarItem.color = new vscode.ThemeColor(
-      'statusBarItem.warningForeground',
+      'statusBarItem.errorForeground',
     );
     statusBarItem.backgroundColor = new vscode.ThemeColor(
-      'statusBarItem.warningBackground',
+      'statusBarItem.errorBackground',
     );
   } else {
-    statusBarItem.text = '$(zap) Anthropic API';
-    statusBarItem.tooltip = 'Claude Code via direct Anthropic API\nClick for usage dashboard';
+    statusBarItem.text = '$(zap)';
+    statusBarItem.tooltip = 'Claude Code via Anthropic API — Click for usage stats';
   }
 
   statusBarItem.show();

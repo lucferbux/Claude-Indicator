@@ -2,7 +2,7 @@
   "name": "claude-vertex-indicator",
   "displayName": "Claude Vertex Indicator",
   "description": "Shows whether Claude Code is using Vertex AI or the Anthropic API, with a usage dashboard for token consumption and cost tracking",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "local",
   "engines": {
     "vscode": "^1.85.0"
@@ -17,6 +17,24 @@
         "title": "Claude Code: Show Usage Dashboard"
       }
     ],
+    "views": {
+      "claude-vertex-indicator-panel": [
+        {
+          "type": "webview",
+          "id": "claude-vertex-indicator.statsView",
+          "name": "Claude Code Usage"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "claude-vertex-indicator-panel",
+          "title": "Claude Usage",
+          "icon": "$(dashboard)"
+        }
+      ]
+    },
     "configuration": {
       "title": "Claude Vertex Indicator",
       "properties": {
