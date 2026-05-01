@@ -1,0 +1,40 @@
+{
+  "name": "claude-vertex-indicator",
+  "displayName": "Claude Vertex Indicator",
+  "description": "Shows whether Claude Code is using Vertex AI or the Anthropic API, with a usage dashboard for token consumption and cost tracking",
+  "version": "0.2.0",
+  "publisher": "local",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "claude-vertex-indicator.showDashboard",
+        "title": "Claude Code: Show Usage Dashboard"
+      }
+    ],
+    "configuration": {
+      "title": "Claude Vertex Indicator",
+      "properties": {
+        "claudeVertexIndicator.monthlyBudget": {
+          "type": "number",
+          "default": 20,
+          "description": "Monthly budget limit in USD (used for the Pro plan progress bar)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "package": "vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.4.0",
+    "@vscode/vsce": "^3.0.0"
+  }
+}
