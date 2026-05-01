@@ -17,24 +17,6 @@
         "title": "Claude Code: Show Usage Dashboard"
       }
     ],
-    "views": {
-      "claude-vertex-indicator-panel": [
-        {
-          "type": "webview",
-          "id": "claude-vertex-indicator.statsView",
-          "name": "Claude Code Usage"
-        }
-      ]
-    },
-    "viewsContainers": {
-      "panel": [
-        {
-          "id": "claude-vertex-indicator-panel",
-          "title": "Claude Usage",
-          "icon": "$(dashboard)"
-        }
-      ]
-    },
     "configuration": {
       "title": "Claude Vertex Indicator",
       "properties": {
