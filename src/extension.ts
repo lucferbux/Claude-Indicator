@@ -1,11 +1,9 @@
 import * as vscode from 'vscode';
 import { ProviderType } from './types';
-import { getMonthlyStats } from './statsReader';
-import { getProviderMonthlyStats, initProviderTracker, disposeProviderTracker } from './providerTracker';
-import { getVertexTemplate, getAnthropicTemplate } from './panel/template';
+import { initProviderTracker, disposeProviderTracker } from './providerTracker';
+import { UsageViewProvider } from './panel/UsageViewProvider';
 
 let statusBarItem: vscode.StatusBarItem;
-let currentPanel: vscode.WebviewPanel | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
   const isVertex = process.env.CLAUDE_CODE_USE_VERTEX === '1';
@@ -13,31 +11,17 @@ export function activate(context: vscode.ExtensionContext) {
 
   initProviderTracker(provider);
 
+  const viewProvider = new UsageViewProvider(context.extensionUri, provider);
+
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(UsageViewProvider.viewType, viewProvider),
+  );
+
   const showDashboard = vscode.commands.registerCommand(
     'claude-vertex-indicator.showDashboard',
     () => {
-      if (currentPanel) {
-        currentPanel.reveal(vscode.ViewColumn.Active);
-        refreshPanel(provider);
-        return;
-      }
-
-      currentPanel = vscode.window.createWebviewPanel(
-        'claudeUsageDashboard',
-        provider === 'vertex' ? 'Vertex AI Usage' : 'Claude Pro Usage',
-        vscode.ViewColumn.Active,
-        { enableScripts: true, retainContextWhenHidden: false },
-      );
-
-      currentPanel.onDidDispose(() => { currentPanel = undefined; });
-
-      currentPanel.webview.onDidReceiveMessage((message) => {
-        if (message.command === 'refresh') {
-          refreshPanel(provider);
-        }
-      });
-
-      refreshPanel(provider);
+      vscode.commands.executeCommand('claude-vertex-indicator.usageView.focus');
+      viewProvider.refresh();
     },
   );
   context.subscriptions.push(showDashboard);
@@ -60,35 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(statusBarItem);
 }
 
-function refreshPanel(provider: ProviderType): void {
-  if (!currentPanel) {
-    return;
-  }
-  const nonce = getNonce();
-  const providerStats = getProviderMonthlyStats(provider);
-  const allStats = getMonthlyStats();
-  const budget = vscode.workspace
-    .getConfiguration('claudeVertexIndicator')
-    .get<number>('monthlyBudget', 20);
-
-  if (provider === 'vertex') {
-    currentPanel.webview.html = getVertexTemplate(providerStats ?? allStats, nonce);
-  } else {
-    currentPanel.webview.html = getAnthropicTemplate(providerStats ?? allStats, budget, nonce);
-  }
-}
-
-function getNonce(): string {
-  let text = '';
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < 32; i++) {
-    text += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return text;
-}
-
 export function deactivate() {
   statusBarItem?.dispose();
-  currentPanel?.dispose();
   disposeProviderTracker();
 }

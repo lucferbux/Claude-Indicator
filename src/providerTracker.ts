@@ -76,10 +76,12 @@ function processUpdate(): void {
   const prov = ensureProvider(store, currentProvider);
   const today = new Date().toISOString().slice(0, 10);
 
-  const sessionDelta = Math.max(0, (cache.totalSessions || 0) - store.lastSeenTotalSessions);
-  const messageDelta = Math.max(0, (cache.totalMessages || 0) - store.lastSeenTotalMessages);
+  const isFirstRun = store.lastSeenTotalSessions === 0 && store.lastSeenTotalMessages === 0 && store.lastSeenDailyTokensLength === 0;
 
-  if (cache.dailyModelTokens.length > store.lastSeenDailyTokensLength) {
+  const sessionDelta = isFirstRun ? 0 : Math.max(0, (cache.totalSessions || 0) - store.lastSeenTotalSessions);
+  const messageDelta = isFirstRun ? 0 : Math.max(0, (cache.totalMessages || 0) - store.lastSeenTotalMessages);
+
+  if (!isFirstRun && cache.dailyModelTokens.length > store.lastSeenDailyTokensLength) {
     const newEntries = cache.dailyModelTokens.slice(store.lastSeenDailyTokensLength);
     for (const entry of newEntries) {
       const existing = prov.dailyModelTokens.find((d) => d.date === entry.date);
@@ -147,6 +149,19 @@ function getCurrentMonthPrefix(): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 }
 
+function getBestMonthPrefix(prov: ProviderData): string {
+  const current = getCurrentMonthPrefix();
+  const hasCurrentData = prov.dailyModelTokens.some((d) => d.date.startsWith(current));
+  if (hasCurrentData) {
+    return current;
+  }
+  const dates = prov.dailyModelTokens.map((d) => d.date).sort();
+  if (dates.length === 0) {
+    return current;
+  }
+  return dates[dates.length - 1].substring(0, 7);
+}
+
 export function getProviderMonthlyStats(provider: ProviderType): MonthlyStats | null {
   if (!store) {
     store = loadStore();
@@ -157,7 +172,7 @@ export function getProviderMonthlyStats(provider: ProviderType): MonthlyStats | 
     return null;
   }
 
-  const monthPrefix = getCurrentMonthPrefix();
+  const monthPrefix = getBestMonthPrefix(prov);
   const monthlyTokenDays = prov.dailyModelTokens.filter((d) => d.date.startsWith(monthPrefix));
   const monthlyActivityDays = prov.dailyActivity.filter((d) => d.date.startsWith(monthPrefix));
 

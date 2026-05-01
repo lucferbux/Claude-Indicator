@@ -17,15 +17,27 @@
         "title": "Claude Code: Show Usage Dashboard"
       }
     ],
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "claude-usage-panel",
+          "title": "Claude Usage",
+          "icon": "$(graph)"
+        }
+      ]
+    },
+    "views": {
+      "claude-usage-panel": [
+        {
+          "type": "webview",
+          "id": "claude-vertex-indicator.usageView",
+          "name": "Claude Usage"
+        }
+      ]
+    },
     "configuration": {
       "title": "Claude Vertex Indicator",
-      "properties": {
-        "claudeVertexIndicator.monthlyBudget": {
-          "type": "number",
-          "default": 20,
-          "description": "Monthly budget limit in USD (used for the Pro plan progress bar)"
-        }
-      }
+      "properties": {}
     }
   },
   "scripts": {

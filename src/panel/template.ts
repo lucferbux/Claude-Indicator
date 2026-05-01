@@ -60,39 +60,33 @@ export function getVertexTemplate(stats: MonthlyStats | null, nonce: string): st
   return wrapHtml('Vertex AI', 'badge-vertex', monthLabel, body, nonce);
 }
 
-export function getAnthropicTemplate(stats: MonthlyStats | null, budget: number, nonce: string): string {
+export function getAnthropicTemplate(stats: MonthlyStats | null, nonce: string): string {
   const monthLabel = getMonthLabelFromStats(stats);
 
   let body: string;
   if (!stats || (stats.totalTokens === 0 && stats.sessions === 0)) {
-    body = '<div class="empty">No usage data for this period.</div>';
-  } else {
-    const pct = Math.min((stats.totalCost / budget) * 100, 100);
-    const remaining = Math.max(budget - stats.totalCost, 0);
-    const barClass = pct > 90 ? 'bar-danger' : pct > 70 ? 'bar-warning' : 'bar-ok';
-
     body = `
-      <div class="cost-hero">${formatCurrency(stats.totalCost)}</div>
-      <div class="stats-row">
+      <div class="empty">
+        <div class="empty-title">No usage tracked yet</div>
+        <div class="empty-desc">Usage will appear here once Claude Code activity is detected via the Anthropic API.<br><br>Session &amp; weekly limits are only visible in the Claude Code CLI via <code>/usage</code>.</div>
+      </div>`;
+  } else {
+    body = `
+      <div class="stats-row" style="padding-top:14px">
         <div class="stat"><span class="stat-val">${stats.sessions.toLocaleString()}</span><span class="stat-lbl">Sessions</span></div>
         <div class="stat"><span class="stat-val">${stats.messages.toLocaleString()}</span><span class="stat-lbl">Messages</span></div>
         <div class="stat"><span class="stat-val">${formatTokens(stats.totalTokens)}</span><span class="stat-lbl">Tokens</span></div>
       </div>
       <div class="section">
-        <div class="section-title">Pro Plan Budget</div>
-        <div class="budget-row">
-          <span>${formatCurrency(stats.totalCost)} / ${formatCurrency(budget)}</span>
-          <span>${formatCurrency(remaining)} left</span>
-        </div>
-        <div class="bar-track"><div class="bar-fill ${barClass}" style="width:${pct.toFixed(1)}%"></div></div>
-      </div>
-      <div class="section">
         <div class="section-title">By Model</div>
         ${getModelRows(stats)}
+      </div>
+      <div class="section hint-section">
+        <div class="hint">Run <code>/usage</code> in Claude Code for live session &amp; weekly limits.</div>
       </div>`;
   }
 
-  return wrapHtml('Anthropic API', 'badge-anthropic', monthLabel, body, nonce);
+  return wrapHtml('Claude Pro', 'badge-anthropic', monthLabel, body, nonce);
 }
 
 function wrapHtml(
@@ -223,6 +217,28 @@ function wrapHtml(
       color: var(--vscode-descriptionForeground);
       padding: 24px 8px;
       font-size: 0.9em;
+    }
+    .empty-title {
+      font-size: 1em;
+      font-weight: 600;
+      color: var(--vscode-foreground);
+      margin-bottom: 8px;
+    }
+    .empty-desc { font-size: 0.8em; line-height: 1.5; }
+    .empty-desc code, .hint code {
+      background: var(--vscode-textCodeBlock-background, #1e1e1e);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-family: var(--vscode-editor-font-family);
+      font-size: 0.95em;
+    }
+    .hint-section { margin-top: 4px; }
+    .hint {
+      font-size: 0.75em;
+      color: var(--vscode-descriptionForeground);
+      text-align: center;
+      padding: 6px 0;
+      border-top: 1px solid var(--vscode-widget-border, #333);
     }
   </style>
 </head>
