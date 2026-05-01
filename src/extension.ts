@@ -5,9 +5,18 @@ import { UsageViewProvider } from './panel/UsageViewProvider';
 
 let statusBarItem: vscode.StatusBarItem;
 
+function detectProvider(): ProviderType {
+  if (
+    process.env.CLAUDE_CODE_USE_VERTEX === '1' ||
+    process.env.ANTHROPIC_VERTEX_PROJECT_ID
+  ) {
+    return 'vertex';
+  }
+  return 'anthropic';
+}
+
 export function activate(context: vscode.ExtensionContext) {
-  const isVertex = process.env.CLAUDE_CODE_USE_VERTEX === '1';
-  const provider: ProviderType = isVertex ? 'vertex' : 'anthropic';
+  const provider = detectProvider();
 
   initProviderTracker(provider);
 
@@ -32,7 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
   statusBarItem.command = 'claude-vertex-indicator.showDashboard';
 
-  if (isVertex) {
+  if (provider === 'vertex') {
     statusBarItem.text = '$(cloud) Vertex';
     statusBarItem.tooltip = 'Claude Code via Vertex AI — Click for usage stats';
   } else {
