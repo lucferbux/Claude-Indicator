@@ -1,7 +1,7 @@
 {
   "name": "claude-vertex-indicator",
   "displayName": "Claude Vertex Indicator",
-  "description": "Shows whether Claude Code is using Vertex AI or the Anthropic API, with a usage dashboard for token consumption and cost tracking",
+  "description": "Shows whether Claude Code is using Vertex AI or the Anthropic API",
   "version": "0.3.0",
   "publisher": "local",
   "engines": {
@@ -10,48 +10,6 @@
   "categories": ["Other"],
   "activationEvents": ["onStartupFinished"],
   "main": "./out/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "claude-vertex-indicator.showDashboard",
-        "title": "Claude Code: Show Usage Dashboard"
-      }
-    ],
-    "viewsContainers": {
-      "panel": [
-        {
-          "id": "claude-usage-panel",
-          "title": "Claude Usage",
-          "icon": "$(graph)"
-        }
-      ]
-    },
-    "views": {
-      "claude-usage-panel": [
-        {
-          "type": "webview",
-          "id": "claude-vertex-indicator.usageView",
-          "name": "Claude Usage"
-        }
-      ]
-    },
-    "configuration": {
-      "title": "Claude Vertex Indicator",
-      "properties": {
-        "claude-vertex-indicator.provider": {
-          "type": "string",
-          "default": "auto",
-          "enum": ["auto", "vertex", "anthropic"],
-          "enumDescriptions": [
-            "Auto-detect from environment variables (CLAUDE_CODE_USE_VERTEX, ANTHROPIC_VERTEX_PROJECT_ID)",
-            "Force Vertex AI provider",
-            "Force Anthropic API provider"
-          ],
-          "description": "Which Claude Code provider to display. Use 'auto' to detect from env vars, or set explicitly if auto-detection fails."
-        }
-      }
-    }
-  },
   "scripts": {
     "build": "tsc",
     "package": "vsce package --no-dependencies"
